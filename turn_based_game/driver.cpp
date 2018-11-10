@@ -4,7 +4,10 @@ int** read_dungeon_data(string filename);
 void print_dungeon(int **working);
 void run_dungeon(int **working);
 void search(int **working, int& x, int& y, int match);
-void move(int** working, int** original, int &x, int &y, char userInput);
+bool move(int** working, int** original, int &x, int &y, char userInput);
+void tile_response(int& tile_ID, bool &flag) throw(string);
+char map_RNG(int m, int i, int n) throw(string);
+int RNG();
 
 int main() {
 
@@ -94,6 +97,8 @@ void search(int **working, int& x, int& y, int match) {
 void run_dungeon(int **working) {
 	char userInput;
 	int x, y;
+	bool clear_flag = false;
+	bool temp;
 
 	//Create a copy of working in order to restore when player moves
 	int **original = new int*[9];
@@ -110,15 +115,23 @@ void run_dungeon(int **working) {
 	do {
 	print_dungeon(working);
 	cout << "\nMove (w/a/s/d): "; cin >> userInput;
-	move(working, original, x, y, userInput);
+	temp = move(working, original, x, y, userInput);
+	system("cls");
+	
+	//Update screen after move
+	print_dungeon(working);
+	if (temp) {
+		try { tile_response(original[y][x], clear_flag); }
+		catch (string error) { cout << error << endl; }
+	}
 	system("cls");
 		
-	} while (original[y][x] != 9);
+	} while (!clear_flag);
 
 	cout << "You reached the boss! Congratulations!" << endl;
 }
 
-void move(int** working, int** original, int &x, int &y, char userInput) {
+bool move(int** working, int** original, int &x, int &y, char userInput) {
 
 	int org_x = x;
 	int org_y = y;
@@ -141,15 +154,79 @@ void move(int** working, int** original, int &x, int &y, char userInput) {
 	if (working[y][x] != 0 && (x < 9 && y < 9 && x > -1 && y > -1) ) {
 		working[org_y][org_x] = original[org_y][org_x];
 		working[y][x] = -1;
+		return true;
 	}
 	else {
 		cout << "Invalid move!" << endl;
 		x = org_x; y = org_y;
 		system("pause");
+		return false;
 	}
 }
 
+void tile_response(int& tile_ID, bool &flag) throw(string) {
 
+	char run;
+
+	switch (tile_ID) {
+	case 0:
+	case -1:
+		throw "ERROR - This should be impossible";
+		break;
+	case 1:
+	case 2:
+		run = map_RNG(20, 1, 79);
+		break;
+	case 3:
+		run = 'i';
+		tile_ID = 2; //Change to normal tile after item received - in future build, we should make it so that the dungeon is permanently changed.
+		break;
+	case 9:
+		run = 'b';
+		break;
+	}
+
+	switch (run) {
+	case 'm':
+		cout << "MONSTER!" << endl;
+		system("pause");
+		break;
+	case 'i':
+		cout << "ITEM!" << endl;
+		system("pause");
+		break;
+	case 'b':
+		cout << "BOSS!" << endl;
+		system("pause");
+		flag = true;
+	default:
+		break;
+	}
+
+}
+
+char map_RNG(int m, int i, int n) throw(string) {
+	if (m + i + n != 100)
+		throw "map_RNG total is less than or over 100.";
+	int rolled_value = RNG();
+
+	if (rolled_value < m) {
+		return 'm';
+	}
+	else if (rolled_value < m + i) {
+		return 'i';
+	}
+	else if (rolled_value <= m + i + n) {
+		return 'n';
+	}
+
+}
+
+int RNG() {
+	time_t timer;
+	srand(time(&timer));
+	return rand() % 100;
+}
 
 
 
