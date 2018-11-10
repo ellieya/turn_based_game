@@ -125,13 +125,13 @@ void move(int** working, int** original, int &x, int &y, char userInput) {
 
 	switch (userInput) {
 	case 'w':
-		y++;
+		y--;
 		break;
 	case 'a':
 		x--;
 		break;
 	case 's':
-		y--;
+		y++;
 		break;
 	case 'd':
 		x++;
